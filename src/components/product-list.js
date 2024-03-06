@@ -7,6 +7,7 @@ const ProductList = () => {
   const [uniqueIds, setUniqueIds] = useState([]);
   const [repeatedIdsCount, setRepeatedIdsCount] = useState(0);
   const [page, setPage] = useState(1);
+  const allIds = await api.getAllIds();
 
   useEffect(() => {
     // Запрос к API и установка данных о товарах
@@ -15,7 +16,7 @@ const ProductList = () => {
         const itemsPerPage = 50;
         const newUniqueIds = [];
         let newRepeatedIdsCount = 0;
-        const allIds = await api.getAllIds();
+        
 
         if (
           // page > uniqueIds / itemsPerPage &&
@@ -49,7 +50,7 @@ const ProductList = () => {
             );
 
             // Подсчитываем количество повторяющихся id в текущей порции
-            newRepeatedIdsCount += itemsPerPage - uniqueIdsBatch.length;
+            newRepeatedIdsCount += itemsPerPage - newUniqueIds.length - uniqueIdsBatch.length;
 
             // Добавляем уникальные идентификаторы текущей порции к общему списку
             newUniqueIds.push(...uniqueIdsBatch);
