@@ -7,8 +7,11 @@ const ProductList = () => {
   const [uniqueIds, setUniqueIds] = useState([]);
   const [repeatedIdsCount, setRepeatedIdsCount] = useState(0);
   const [page, setPage] = useState(1);
+ 
+  let qUseEff = 0;
 
   useEffect(() => {
+    qUseEff += 1;
     // Запрос к API и установка данных о товарах
     const fetchData = async () => {
       try {
@@ -85,6 +88,7 @@ const ProductList = () => {
     };
 
     fetchData();
+    console.log(`qUseEff >>> ${qUseEff}`);
   }, [page]);
 
   return (
