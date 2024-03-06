@@ -77,6 +77,23 @@ const api = {
     }
   },
 
+  getAllFields: async () => {
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        ...authenticate(),
+        body: JSON.stringify({
+          action: "get_fields",
+        }),
+      });
+      const data = await response.json();
+      return data.result;
+    } catch (error) {
+      console.error("Error:", error);
+      return [];
+    }
+  },
+
   getFields: async (field, offset, limit) => {
     try {
       const response = await fetch(API_URL, {
