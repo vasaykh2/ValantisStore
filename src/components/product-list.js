@@ -15,8 +15,7 @@ const ProductList = () => {
         const allIds = await api.getAllIds();
         const itemsPerPage = 50;
         const newUniqueIds = [];
-        let newRepeatedIdsCount = 0;
-        
+        let newRepeatedIdsCount = 0;        
 
         if (
           // page > uniqueIds / itemsPerPage &&
@@ -45,15 +44,17 @@ const ProductList = () => {
             console.log(allIds.length, offset, newUniqueIds.length, ids);
 
             // Оставляем только уникальные идентификаторы
-            const uniqueIdsBatch = Array.from(new Set(ids)).filter(
+            const uniqueIdsBatch = await Array.from(new Set(ids)).filter(
               (id) => !uniqueIds.includes(id)
             );
-
+const go = async () => {
             // Подсчитываем количество повторяющихся id в текущей порции
-            newRepeatedIdsCount += itemsPerPage - newUniqueIds.length - uniqueIdsBatch.length;
+            newRepeatedIdsCount += itemsPerPage - await newUniqueIds.length - uniqueIdsBatch.length;
 
             // Добавляем уникальные идентификаторы текущей порции к общему списку
             newUniqueIds.push(...uniqueIdsBatch);
+}
+            go();
           }
 
           console.log(uniqueIds, newUniqueIds);
