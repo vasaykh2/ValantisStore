@@ -7,12 +7,12 @@ const ProductList = () => {
   const [uniqueIds, setUniqueIds] = useState([]);
   const [repeatedIdsCount, setRepeatedIdsCount] = useState(0);
   const [page, setPage] = useState(1);
-  const allIds = await api.getAllIds();
 
   useEffect(() => {
     // Запрос к API и установка данных о товарах
     const fetchData = async () => {
       try {
+        const allIds = await api.getAllIds();
         const itemsPerPage = 50;
         const newUniqueIds = [];
         let newRepeatedIdsCount = 0;
