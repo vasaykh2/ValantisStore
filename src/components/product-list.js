@@ -7,7 +7,7 @@ const ProductList = () => {
   const [uniqueIds, setUniqueIds] = useState([]);
   const [repeatedIdsCount, setRepeatedIdsCount] = useState(0);
   const [page, setPage] = useState(1);
- 
+
   let qUseEff = 0;
 
   useEffect(() => {
@@ -18,7 +18,7 @@ const ProductList = () => {
         const allIds = await api.getAllIds();
         const itemsPerPage = 50;
         const newUniqueIds = [];
-        let newRepeatedIdsCount = 0;        
+        let newRepeatedIdsCount = 0;
 
         if (
           // page > uniqueIds / itemsPerPage &&
