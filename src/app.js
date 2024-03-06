@@ -1,4 +1,4 @@
-import ProductList from './components/productList';
+import ProductList from './components/product-list';
 import './app.css';
 
 function App() {
