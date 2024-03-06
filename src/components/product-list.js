@@ -91,6 +91,8 @@ const ProductList = () => {
     console.log(`qUseEff >>> ${qUseEff}`);
   }, [page]);
 
+  console.log(`qUseEff out >>> ${qUseEff}`);
+
   return (
     <div>
       <h1>Список товаров</h1>
