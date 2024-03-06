@@ -44,17 +44,15 @@ const ProductList = () => {
             console.log(allIds.length, offset, newUniqueIds.length, ids);
 
             // Оставляем только уникальные идентификаторы
-            const uniqueIdsBatch = await Array.from(new Set(ids)).filter(
+            const uniqueIdsBatch = Array.from(new Set(ids)).filter(
               (id) => !uniqueIds.includes(id)
             );
-const go = async () => {
+
             // Подсчитываем количество повторяющихся id в текущей порции
             newRepeatedIdsCount += itemsPerPage - await newUniqueIds.length - uniqueIdsBatch.length;
 
             // Добавляем уникальные идентификаторы текущей порции к общему списку
             newUniqueIds.push(...uniqueIdsBatch);
-}
-            go();
           }
 
           console.log(uniqueIds, newUniqueIds);
