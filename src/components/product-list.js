@@ -24,15 +24,15 @@ const ProductList = () => {
           newRepeatedIdsCount;
 
         if (
-                allIds.length >
+          allIds.length >
           ids.uniqueIds[page - 1].length + ids.repeatedIdsCount[page - 1]
         ) {
           // Выполняем цикл, пока не получим достаточное количество уникальных id для новой страницы
           while (
             newUniqueIds.length < itemsPerPage &&
             allIds.length >
-            ids.uniqueIds[page - 1].length +
-              ids.repeatedIdsCount[page - 1] +
+              ids.uniqueIds[page - 1].length +
+                ids.repeatedIdsCount[page - 1] +
                 newUniqueIds.length +
                 newRepeatedIdsCount
           ) {
@@ -65,7 +65,6 @@ const ProductList = () => {
               newRepeatedIdsCount;
           }
 
-
           const arraysAreEqual = (arr1, arr2) => {
             if (arr1.length !== arr2.length) {
               return false;
@@ -76,7 +75,7 @@ const ProductList = () => {
               }
             }
             return true;
-          }
+          };
           // Обновляем состояние с уникальными идентификаторами и количеством повторяющихся идентификаторов
           setIds((prevIds) => {
             // Проверяем, чтобы избежать дублирования объектов
@@ -103,7 +102,13 @@ const ProductList = () => {
         }
 
         console.log(
-          `страница -> ${page} length -> ${ids.repeatedIdsCount.length} offset -> ${offset} newUniqueIds.length -> ${newUniqueIds.length} repeatedIdsCount -> ${ids.repeatedIdsCount[page - 1]} newRepeatedIdsCount -> ${newRepeatedIdsCount}`
+          `страница -> ${page} length -> ${
+            ids.repeatedIdsCount.length
+          } offset -> ${offset} newUniqueIds.length -> ${
+            newUniqueIds.length
+          } repeatedIdsCount -> ${
+            ids.repeatedIdsCount[page - 1]
+          } newRepeatedIdsCount -> ${newRepeatedIdsCount}`
         );
         // console.log(
         //   `uniqueDetailedProducts -> ${
@@ -125,11 +130,7 @@ const ProductList = () => {
         //     2
         //   )} <> ${JSON.stringify(products[products.length - 1], null, 2)}`
         // );
-        // console.log(
-        //   `ids -> ${JSON.stringify(ids, null, 2)}`,
-        //   uniqueIds,
-        //   repeatedIdsCount
-        // );
+        // console.log(`ids -> ${JSON.stringify(ids, null, 2)}`);
         // console.log(`ids -> ${ids.uniqueIds[page - 1]}, ${ids.repeatedIdsCount[page - 1]}`, uniqueIds, repeatedIdsCount);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -138,6 +139,25 @@ const ProductList = () => {
 
     fetchData();
   }, [page]);
+
+  const handlePreviousPageClick = () => {
+    // Проверяем, что текущая страница больше 1
+    if (page > 1) {
+      // Уменьшаем номер страницы
+      setPage(page - 1);
+
+      // Удаляем данные последней страницы из состояния
+      setIds((prevIds) => {
+        const updatedUniqueIds = prevIds.uniqueIds.slice(0, -1);
+        const updatedRepeatedIdsCount = prevIds.repeatedIdsCount.slice(0, -1);
+
+        return {
+          uniqueIds: updatedUniqueIds,
+          repeatedIdsCount: updatedRepeatedIdsCount,
+        };
+      });
+    }
+  };
 
   return (
     <div>
@@ -154,7 +174,7 @@ const ProductList = () => {
         ))}
       </ul>
       {/* Кнопки для пагинации */}
-      <button onClick={() => setPage(page - 1)} disabled={page === 1}>
+      <button onClick={handlePreviousPageClick} disabled={page === 1}>
         Предыдущая страница
       </button>
       <button onClick={() => setPage(page + 1)}>Следующая страница</button>
