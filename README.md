@@ -15,7 +15,7 @@ git clone git@github.com:vasaykh2/ValantisStore.git
 cd ValantisStore
 npm install
 npm start
-bash```
+```
 
 ## Описание проекта
 
