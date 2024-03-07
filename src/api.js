@@ -1,4 +1,3 @@
-// src/api.js
 import md5 from "md5";
 
 const API_URL = "https://api.valantis.store:41000/";
@@ -134,5 +133,3 @@ const api = {
 };
 
 export default api;
-
-// console.log(xAuth);

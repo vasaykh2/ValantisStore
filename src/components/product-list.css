@@ -1,0 +1,116 @@
+/* Общие стили */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f0f8ff;
+}
+
+/* Заголовок страницы */
+.page-title {
+  font-size: 24px;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #55032c;
+}
+
+/* Стили для контейнера фильтров */
+.filters {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+/* Стили для инпута фильтра */
+.filter-input {
+  max-width: 100%;
+  padding: 10px;
+  margin: 10px;
+  background-color: #e9e8e1;
+  color: #55032c;
+  border: 1px solid #ffd700;
+  outline: none;
+}
+
+/* Стили для инпута фильтра в фокусе */
+.filter-input:focus {
+  border-color: #42056e !important;
+}
+
+/* Стили для текста в label */
+label {
+  color: #55032c;
+}
+
+/* Адаптивные стили фильтра */
+@media (max-width: 768px) {
+  .filters {
+    flex-direction: column;
+  }
+
+  .filter-input {
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
+}
+
+/* Контейнер для списка товаров */
+.product-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+/* Стили для карточки товара */
+.product-card {
+  border: 2px solid #ffd700;
+  padding: 15px;
+  border-radius: 8px;
+  transition: transform 0.3s ease-in-out;
+  background-color: #eacfc0;
+  color: #55032c;
+}
+
+.name {
+  font-weight: 900;
+}
+
+/* Стили для кнопок пагинации */
+.pagination-button {
+  background-color: #670fa7;
+  color: #fff;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease-in-out;
+  margin: 0 20px;
+}
+
+.pagination-button:disabled {
+  background-color: #ddd;
+  cursor: not-allowed;
+}
+
+/* Стили для лоадера */
+.loader {
+  display: inline-block;
+  width: 50px;
+  height: 50px;
+  border: 3px solid #42056e;
+  border-radius: 50%;
+  border-top: 3px solid #fff;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

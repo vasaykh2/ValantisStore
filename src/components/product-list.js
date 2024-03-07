@@ -1,20 +1,18 @@
-// src/components/product-list.js
 import React, { useState, useEffect } from "react";
 import api from "../api";
+import "./product-list.css";
 
 const ProductList = () => {
   // Состояние для хранения списка продуктов
   const [products, setProducts] = useState([]);
-
   // Состояние для хранения идентификаторов и количества повторяющихся идентификаторов
   const [ids, setIds] = useState({ uniqueIds: [[]], repeatedIdsCount: [0] });
-
   // Состояние для хранения текущей страницы
   const [page, setPage] = useState(1);
-
   // Состояние для хранения фильтров
   const [filters, setFilters] = useState({ name: "", price: "", brand: "" });
-
+  // Состояние для отслеживания загрузки данных
+  const [loading, setLoading] = useState(false);
   // Количество товаров, которые нужно отобразить на одной странице
   const itemsPerPage = 50;
 
@@ -22,6 +20,8 @@ const ProductList = () => {
     // Функция для запроса данных у API
     const fetchData = async () => {
       try {
+        setLoading(true); // Устанавливаем loading в true перед запросом
+
         // Получаем все идентификаторы товаров
         const allIds = await api.getAllIds();
 
@@ -121,7 +121,7 @@ const ProductList = () => {
             return prevIds;
           });
 
-          // Применяем фильтры только если они установлены
+          // Применяем фильтры, только если они установлены
           if (
             filters.name !== "" ||
             filters.price !== "" ||
@@ -138,19 +138,10 @@ const ProductList = () => {
             setProducts(uniqueDetailedProducts);
           }
         }
-
-        console.log(
-          `страница -> ${page} length -> ${
-            ids.repeatedIdsCount.length
-          } offset -> ${offset} newUniqueIds.length -> ${
-            newUniqueIds.length
-          } repeatedIdsCount -> ${
-            ids.repeatedIdsCount[page - 1]
-          } newRepeatedIdsCount -> ${newRepeatedIdsCount}`
-        );
-        console.log(`ids -> ${ids.uniqueIds[page - 1]}, ${ids.repeatedIdsCount[page - 1]}`);
       } catch (error) {
         console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false); // Устанавливаем loading в false после завершения запроса
       }
     };
 
@@ -162,7 +153,9 @@ const ProductList = () => {
       return (
         (!filters.name ||
           (product.product &&
-            product.product.toLowerCase().includes(filters.name.toLowerCase()))) &&
+            product.product
+              .toLowerCase()
+              .includes(filters.name.toLowerCase()))) &&
         (!filters.price ||
           (product.price &&
             product.price.toString().includes(filters.price))) &&
@@ -193,9 +186,9 @@ const ProductList = () => {
   };
 
   return (
-    <div>
-      <h1>Список товаров</h1>
-      <div>
+    <div className="container">
+      <h1 className="page-title">Список товаров</h1>
+      <div className="filters">
         <label>
           Название:
           <input
@@ -203,6 +196,7 @@ const ProductList = () => {
             name="name"
             value={filters.name}
             onChange={handleFilterChange}
+            className="filter-input"
           />
         </label>
         <label>
@@ -212,6 +206,7 @@ const ProductList = () => {
             name="price"
             value={filters.price}
             onChange={handleFilterChange}
+            className="filter-input"
           />
         </label>
         <label>
@@ -221,57 +216,38 @@ const ProductList = () => {
             name="brand"
             value={filters.brand}
             onChange={handleFilterChange}
+            className="filter-input"
           />
         </label>
       </div>
-      <ul>
-        {products.map((product) => (
-          <li key={product.id}>
-            <p>ID: {product.id}</p>
-            <p>Название: {product.product}</p>
-            <p>Цена: {product.price}</p>
-            <p>Бренд: {product.brand || "Не указан"}</p>
-          </li>
-        ))}
-      </ul>
-      <button onClick={handlePreviousPageClick} disabled={page === 1}>
+      {loading ? (
+        <div>
+      <p className="loader"></p>
+      </div>
+    ) : (
+        <ul className="product-list">
+          {products.map((product) => (
+            <li key={product.id} className="product-card">
+              <p>ID: {product.id}</p>
+              <p className="name">Название: {product.product}</p>
+              <p>Цена: {product.price}</p>
+              <p>Бренд: {product.brand || "Не указан"}</p>
+            </li>
+          ))}
+        </ul>
+      )}
+      <button
+        onClick={handlePreviousPageClick}
+        disabled={page === 1}
+        className="pagination-button"
+      >
         Предыдущая страница
       </button>
-      <button onClick={() => setPage(page + 1)}>Следующая страница</button>
+      <button onClick={() => setPage(page + 1)} className="pagination-button">
+        Следующая страница
+      </button>
     </div>
   );
 };
 
 export default ProductList;
-
-// console.log(
-//   `страница -> ${page} length -> ${
-//     ids.repeatedIdsCount.length
-//   } offset -> ${offset} newUniqueIds.length -> ${
-//     newUniqueIds.length
-//   } repeatedIdsCount -> ${
-//     ids.repeatedIdsCount[page - 1]
-//   } newRepeatedIdsCount -> ${newRepeatedIdsCount}`
-// );
-// console.log(
-//   `uniqueDetailedProducts -> ${
-//     uniqueDetailedProducts.length
-//   }: ${JSON.stringify(
-//     uniqueDetailedProducts[0],
-//     null,
-//     2
-//   )} <> ${JSON.stringify(
-//     uniqueDetailedProducts[uniqueDetailedProducts.length - 1],
-//     null,
-//     2
-//   )}`
-// );
-// console.log(
-//   `products -> ${products.length}: ${JSON.stringify(
-//     products[0],
-//     null,
-//     2
-//   )} <> ${JSON.stringify(products[products.length - 1], null, 2)}`
-// );
-// console.log(`ids -> ${JSON.stringify(ids, null, 2)}`);
-// console.log(`ids -> ${ids.uniqueIds[page - 1]}, ${ids.repeatedIdsCount[page - 1]}`, uniqueIds, repeatedIdsCount);
