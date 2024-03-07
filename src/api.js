@@ -2,6 +2,7 @@
 import md5 from "md5";
 
 const API_URL = "https://api.valantis.store:41000/";
+const numberRetries = 5;
 
 const authenticate = () => {
   const password = "Valantis";
@@ -32,14 +33,26 @@ const retryFetch = async (url, options, retries) => {
   while (retryCount > 0) {
     try {
       const response = await fetch(url, options);
-      return handleResponse(response);
+      // Проверяем успешность запроса
+      if (response.ok) {
+        return handleResponse(response);
+      } else {
+        // Если запрос неудачен, уменьшаем retryCount и продолжаем цикл
+        retryCount--;
+        // Выводим идентификатор ошибки и сообщение о попытке
+        console.error(
+          `HTTP error! Status: ${response.status}, Retry attempts left: ${retryCount}`
+        );
+      }
     } catch (error) {
-      console.error("Error:", error);
+      // Если произошла ошибка, уменьшаем retryCount и продолжаем цикл
       retryCount--;
+      // Выводим идентификатор ошибки и сообщение о попытке
+      console.error("Error:", error, `Retry attempts left: ${retryCount}`);
     }
   }
-
-  return [];
+  // Если исчерпаны все попытки, генерируем ошибку
+  throw new Error("Failed to fetch data after multiple attempts");
 };
 
 const api = {
@@ -52,7 +65,7 @@ const api = {
       }),
     };
 
-    return retryFetch(API_URL, options, 3);
+    return retryFetch(API_URL, options, numberRetries);
   },
 
   getIds: async (offset, limit) => {
@@ -65,7 +78,7 @@ const api = {
       }),
     };
 
-    return retryFetch(API_URL, options, 3);
+    return retryFetch(API_URL, options, numberRetries);
   },
 
   getItems: async (ids) => {
@@ -78,7 +91,7 @@ const api = {
       }),
     };
 
-    return retryFetch(API_URL, options, 3);
+    return retryFetch(API_URL, options, numberRetries);
   },
 
   getAllFields: async () => {
@@ -90,7 +103,7 @@ const api = {
       }),
     };
 
-    return retryFetch(API_URL, options, 3);
+    return retryFetch(API_URL, options, numberRetries);
   },
 
   getFields: async (field, offset, limit) => {
@@ -103,7 +116,7 @@ const api = {
       }),
     };
 
-    return retryFetch(API_URL, options, 3);
+    return retryFetch(API_URL, options, numberRetries);
   },
 
   filter: async (field, value) => {
@@ -116,7 +129,7 @@ const api = {
       }),
     };
 
-    return retryFetch(API_URL, options, 3);
+    return retryFetch(API_URL, options, numberRetries);
   },
 };
 

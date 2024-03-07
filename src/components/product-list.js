@@ -8,10 +8,7 @@ const ProductList = () => {
   const [repeatedIdsCount, setRepeatedIdsCount] = useState(0);
   const [page, setPage] = useState(1);
 
-  let qUseEff = 0;
-
   useEffect(() => {
-    qUseEff += 1;
     // Запрос к API и установка данных о товарах
     const fetchData = async () => {
       try {
@@ -19,6 +16,13 @@ const ProductList = () => {
         const itemsPerPage = 50;
         const newUniqueIds = [];
         let newRepeatedIdsCount = 0;
+        let uniqueDetailedProducts = [];
+        // Учитываем уже полученные уникальные идентификаторы и не прошедшие проверку в предыдущем цикле
+        let offset =
+        (page - 1) * itemsPerPage +
+        newUniqueIds.length +
+        repeatedIdsCount +
+        newRepeatedIdsCount;
 
         if (
           // page > uniqueIds / itemsPerPage &&
@@ -33,18 +37,13 @@ const ProductList = () => {
                 newUniqueIds.length +
                 newRepeatedIdsCount
           ) {
-            // Учитываем уже полученные уникальные идентификаторы и не прошедшие проверку в предыдущем цикле
-            const offset =
-              (page - 1) * itemsPerPage +
-              newUniqueIds.length +
-              repeatedIdsCount +
-              newRepeatedIdsCount;
+
             const ids = await api.getIds(
               offset,
               itemsPerPage - newUniqueIds.length
             );
 
-            console.log(allIds.length, offset, newUniqueIds.length, ids);
+            // console.log(allIds.length, offset, newUniqueIds.length, ids);
 
             // Оставляем только уникальные идентификаторы
             const uniqueIdsBatch = Array.from(new Set(ids)).filter(
@@ -52,13 +51,25 @@ const ProductList = () => {
             );
 
             // Подсчитываем количество повторяющихся id в текущей порции
-            newRepeatedIdsCount += itemsPerPage - await newUniqueIds.length - uniqueIdsBatch.length;
+            newRepeatedIdsCount += itemsPerPage - newUniqueIds.length - uniqueIdsBatch.length;
 
             // Добавляем уникальные идентификаторы текущей порции к общему списку
             newUniqueIds.push(...uniqueIdsBatch);
+            // Получаем детали товаров только для уникальных идентификаторов текущей страницы
+           const detailedProducts = await api.getItems(newUniqueIds);
+           uniqueDetailedProducts = detailedProducts.filter(
+            (value, index, array) => {
+              return array.findIndex((obj) => obj.id === value.id) === index;
+            }
+          );
+          offset =
+        (page - 1) * itemsPerPage +
+        newUniqueIds.length +
+        repeatedIdsCount +
+        newRepeatedIdsCount;
           }
 
-          console.log(uniqueIds, newUniqueIds);
+          // console.log(uniqueIds, newUniqueIds);
 
           // Обновляем состояние с уникальными идентификаторами
 
@@ -71,27 +82,35 @@ const ProductList = () => {
           setRepeatedIdsCount((prevCount) => prevCount + newRepeatedIdsCount);
 
           // Получаем детали товаров только для уникальных идентификаторов текущей страницы
-          const detailedProducts = await api.getItems(newUniqueIds);
-          setProducts(detailedProducts);
+          // const detailedProducts = await api.getItems(newUniqueIds);
+          setProducts(uniqueDetailedProducts);
         }
 
         console.log(
-          page,
-          uniqueIds,
-          newUniqueIds,
-          (page - 1) * itemsPerPage,
-          (page - 1) * itemsPerPage + itemsPerPage
+          `страница -> ${page}  offset -> ${offset}`
         );
+        console.log(
+          `uniqueDetailedProducts -> ${uniqueDetailedProducts.length}: ${JSON.stringify(
+            uniqueDetailedProducts[0],
+            null,
+            2
+          )} <> ${JSON.stringify(uniqueDetailedProducts[uniqueDetailedProducts.length - 1], null, 2)}`
+        );
+        console.log(
+            `products -> ${products.length}: ${JSON.stringify(
+              products[0],
+              null,
+              2
+            )} <> ${JSON.stringify(products[products.length - 1], null, 2)}`
+          );
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
 
     fetchData();
-    console.log(`qUseEff >>> ${qUseEff}`);
   }, [page]);
 
-  console.log(`qUseEff out >>> ${qUseEff}`);
 
   return (
     <div>
