@@ -25,3 +25,4 @@ ValantisStore представляет собой интерактивный с�
 Вадим Савинов
 
 Проект доступен на GitHub Pages: [ValantisStore](https://vasaykh2.github.io/ValantisStore/)
+[на vercel.com](https://valantis-store-five.vercel.app/)
