@@ -3,26 +3,41 @@ import React, { useState, useEffect } from "react";
 import api from "../api";
 
 const ProductList = () => {
+  // Состояние для хранения списка продуктов
   const [products, setProducts] = useState([]);
+
+  // Состояние для хранения идентификаторов и количества повторяющихся идентификаторов
   const [ids, setIds] = useState({ uniqueIds: [[]], repeatedIdsCount: [0] });
+
+  // Состояние для хранения текущей страницы
   const [page, setPage] = useState(1);
+
+  // Состояние для хранения фильтров
+  const [filters, setFilters] = useState({ name: "", price: "", brand: "" });
+
+  // Количество товаров, которые нужно отобразить на одной странице
   const itemsPerPage = 50;
 
   useEffect(() => {
-    // Запрос к API и установка данных о товарах
+    // Функция для запроса данных у API
     const fetchData = async () => {
       try {
+        // Получаем все идентификаторы товаров
         const allIds = await api.getAllIds();
+
+        // Инициализируем переменные для новых данных
         let newUniqueIds = [];
         let newRepeatedIdsCount = 0;
         let uniqueDetailedProducts = [];
-        // Учитываем уже полученные уникальные идентификаторы и не прошедшие проверку в предыдущем цикле
+
+        // Вычисляем offset для запроса данных
         let offset =
           (page - 1) * itemsPerPage +
           newUniqueIds.length +
           ids.repeatedIdsCount[page - 1] +
           newRepeatedIdsCount;
 
+        // Проверяем, есть ли необходимость делать новый запрос
         if (
           allIds.length >
           ids.uniqueIds[page - 1].length + ids.repeatedIdsCount[page - 1]
@@ -36,28 +51,34 @@ const ProductList = () => {
                 newUniqueIds.length +
                 newRepeatedIdsCount
           ) {
+            // Получаем новые id для текущей страницы
             const newIds = await api.getIds(
               offset,
               itemsPerPage - newUniqueIds.length
             );
 
-            // Оставляем только уникальные идентификаторы
+            // Оставляем только уникальные id
             const uniqueIdsBatch = Array.from(new Set(newIds)).filter(
               (id) => !ids.uniqueIds[page - 1].includes(id)
             );
 
-            // Добавляем уникальные идентификаторы текущей порции к общему списку
+            // Добавляем уникальные id к общему списку
             newUniqueIds.push(...uniqueIdsBatch);
-            // Подсчитываем количество повторяющихся id в текущей порции
+
+            // Подсчитываем количество повторяющихся id
             newRepeatedIdsCount += itemsPerPage - newUniqueIds.length;
-            // Получаем детали товаров только для уникальных идентификаторов текущей страницы
+
+            // Получаем детали товаров только для уникальных id текущей страницы
             const detailedProducts = await api.getItems(newUniqueIds);
-            // Дополнительно отфильтровываем только уникальные товары текущей страницы
+
+            // Дополнительно фильтруем только уникальные товары текущей страницы
             uniqueDetailedProducts = detailedProducts.filter(
               (value, index, array) => {
                 return array.findIndex((obj) => obj.id === value.id) === index;
               }
             );
+
+            // Обновляем offset для следующего запроса
             offset =
               (page - 1) * itemsPerPage +
               newUniqueIds.length +
@@ -65,6 +86,7 @@ const ProductList = () => {
               newRepeatedIdsCount;
           }
 
+          // Функция для сравнения двух массивов
           const arraysAreEqual = (arr1, arr2) => {
             if (arr1.length !== arr2.length) {
               return false;
@@ -76,6 +98,7 @@ const ProductList = () => {
             }
             return true;
           };
+
           // Обновляем состояние с уникальными идентификаторами и количеством повторяющихся идентификаторов
           setIds((prevIds) => {
             // Проверяем, чтобы избежать дублирования объектов
@@ -98,7 +121,22 @@ const ProductList = () => {
             return prevIds;
           });
 
-          setProducts(uniqueDetailedProducts);
+          // Применяем фильтры только если они установлены
+          if (
+            filters.name !== "" ||
+            filters.price !== "" ||
+            filters.brand !== ""
+          ) {
+            setProducts(
+              applyFilters(uniqueDetailedProducts, filters).slice(
+                0,
+                itemsPerPage
+              )
+            );
+          } else {
+            // Если фильтры не установлены, выводим весь список товаров
+            setProducts(uniqueDetailedProducts);
+          }
         }
 
         console.log(
@@ -110,47 +148,37 @@ const ProductList = () => {
             ids.repeatedIdsCount[page - 1]
           } newRepeatedIdsCount -> ${newRepeatedIdsCount}`
         );
-        // console.log(
-        //   `uniqueDetailedProducts -> ${
-        //     uniqueDetailedProducts.length
-        //   }: ${JSON.stringify(
-        //     uniqueDetailedProducts[0],
-        //     null,
-        //     2
-        //   )} <> ${JSON.stringify(
-        //     uniqueDetailedProducts[uniqueDetailedProducts.length - 1],
-        //     null,
-        //     2
-        //   )}`
-        // );
-        // console.log(
-        //   `products -> ${products.length}: ${JSON.stringify(
-        //     products[0],
-        //     null,
-        //     2
-        //   )} <> ${JSON.stringify(products[products.length - 1], null, 2)}`
-        // );
-        // console.log(`ids -> ${JSON.stringify(ids, null, 2)}`);
-        // console.log(`ids -> ${ids.uniqueIds[page - 1]}, ${ids.repeatedIdsCount[page - 1]}`, uniqueIds, repeatedIdsCount);
+        console.log(`ids -> ${ids.uniqueIds[page - 1]}, ${ids.repeatedIdsCount[page - 1]}`);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
 
     fetchData();
-  }, [page]);
+  }, [page, filters]);
+
+  const applyFilters = (data, filters) => {
+    return data.filter((product) => {
+      return (
+        (!filters.name ||
+          (product.product &&
+            product.product.toLowerCase().includes(filters.name.toLowerCase()))) &&
+        (!filters.price ||
+          (product.price &&
+            product.price.toString().includes(filters.price))) &&
+        (!filters.brand ||
+          (product.brand &&
+            product.brand.toLowerCase().includes(filters.brand.toLowerCase())))
+      );
+    });
+  };
 
   const handlePreviousPageClick = () => {
-    // Проверяем, что текущая страница больше 1
     if (page > 1) {
-      // Уменьшаем номер страницы
       setPage(page - 1);
-
-      // Удаляем данные последней страницы из состояния
       setIds((prevIds) => {
         const updatedUniqueIds = prevIds.uniqueIds.slice(0, -1);
         const updatedRepeatedIdsCount = prevIds.repeatedIdsCount.slice(0, -1);
-
         return {
           uniqueIds: updatedUniqueIds,
           repeatedIdsCount: updatedRepeatedIdsCount,
@@ -159,11 +187,44 @@ const ProductList = () => {
     }
   };
 
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters((prevFilters) => ({ ...prevFilters, [name]: value }));
+  };
+
   return (
     <div>
       <h1>Список товаров</h1>
+      <div>
+        <label>
+          Название:
+          <input
+            type="text"
+            name="name"
+            value={filters.name}
+            onChange={handleFilterChange}
+          />
+        </label>
+        <label>
+          Цена:
+          <input
+            type="text"
+            name="price"
+            value={filters.price}
+            onChange={handleFilterChange}
+          />
+        </label>
+        <label>
+          Бренд:
+          <input
+            type="text"
+            name="brand"
+            value={filters.brand}
+            onChange={handleFilterChange}
+          />
+        </label>
+      </div>
       <ul>
-        {/* Отображаем каждый товар в списке */}
         {products.map((product) => (
           <li key={product.id}>
             <p>ID: {product.id}</p>
@@ -173,7 +234,6 @@ const ProductList = () => {
           </li>
         ))}
       </ul>
-      {/* Кнопки для пагинации */}
       <button onClick={handlePreviousPageClick} disabled={page === 1}>
         Предыдущая страница
       </button>
@@ -183,3 +243,35 @@ const ProductList = () => {
 };
 
 export default ProductList;
+
+// console.log(
+//   `страница -> ${page} length -> ${
+//     ids.repeatedIdsCount.length
+//   } offset -> ${offset} newUniqueIds.length -> ${
+//     newUniqueIds.length
+//   } repeatedIdsCount -> ${
+//     ids.repeatedIdsCount[page - 1]
+//   } newRepeatedIdsCount -> ${newRepeatedIdsCount}`
+// );
+// console.log(
+//   `uniqueDetailedProducts -> ${
+//     uniqueDetailedProducts.length
+//   }: ${JSON.stringify(
+//     uniqueDetailedProducts[0],
+//     null,
+//     2
+//   )} <> ${JSON.stringify(
+//     uniqueDetailedProducts[uniqueDetailedProducts.length - 1],
+//     null,
+//     2
+//   )}`
+// );
+// console.log(
+//   `products -> ${products.length}: ${JSON.stringify(
+//     products[0],
+//     null,
+//     2
+//   )} <> ${JSON.stringify(products[products.length - 1], null, 2)}`
+// );
+// console.log(`ids -> ${JSON.stringify(ids, null, 2)}`);
+// console.log(`ids -> ${ids.uniqueIds[page - 1]}, ${ids.repeatedIdsCount[page - 1]}`, uniqueIds, repeatedIdsCount);
